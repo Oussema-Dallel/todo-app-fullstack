@@ -1,27 +1,29 @@
+import { asyncWrapper } from './utils/asyncWrapper';
 import cors from 'cors';
 import express from 'express';
-import type { Express, Request, Response } from 'express';
+import type { Express } from 'express';
+import type { Todo } from './types/Todo';
+import { createTodo, deleteTodo, getTodos, updateTodo } from './services/todos';
 
 const app: Express = express();
-const port = 3000;
+const port = 4000;
 
-type EmptyObject = Record<string, never>;
+// TODO: Add CORS options
+const corsOptions: cors.CorsOptions = {
+	origin: '*',
+	optionsSuccessStatus: 200,
+};
 
-type RequestWithBody<T> = Request<EmptyObject, EmptyObject, T, EmptyObject>;
-
-app.use(cors);
+app.use(cors(corsOptions));
 app.use(express.json());
 
-app.get('/', (request: RequestWithBody<{ name: string }>, response: Response) => {
-	response.json('Express + TypeScript Server');
-});
+app.get('/', asyncWrapper<Todo>(getTodos));
 
-app.post('/tasks', (request: RequestWithBody<{ name: string }>, response: Response) => {
-	const { name } = request.body;
+app.post('/todos', asyncWrapper<Todo>(createTodo));
 
-	console.log(name);
-	response.json('POST Request');
-});
+app.put('/todos/:id', asyncWrapper<Todo>(updateTodo));
+
+app.delete('/todos/:id', asyncWrapper(deleteTodo));
 
 app.listen(port, () => {
 	console.log(`[server]: Server is running at http://localhost:${port}`);
