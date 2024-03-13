@@ -514,6 +514,7 @@ module.exports = {
 					args: false,
 					props: false,
 				},
+				checkFilenames: false,
 			},
 		],
 		'unicorn/prefer-ternary': [ 'off' ],
