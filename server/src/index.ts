@@ -1,10 +1,11 @@
-import { asyncWrapper } from './utils/asyncWrapper';
+import { contextMiddleware } from './middlewares/contextMiddleware';
+import cookieParser from 'cookie-parser';
 import cors from 'cors';
+import type { Express } from 'express';
 import express from 'express';
 import { PORT } from './utils/envSetup';
-import type { Todo } from './types/Todo';
-import { createTodo, deleteTodo, getTodos, updateTodo } from './services/todos';
-import type { Express, NextFunction, Request, Response } from 'express';
+import { TodoRouter } from './routes/TodoRouter';
+import { UserRouter } from './routes/UserRouter';
 
 const app: Express = express();
 
@@ -16,24 +17,14 @@ const corsOptions: cors.CorsOptions = {
 
 app.use(cors(corsOptions));
 app.use(express.json());
+app.use(cookieParser());
+app.use(contextMiddleware as never);
 
-const verifyToken = (request: Request, response: Response, next: NextFunction): void => {
-	const { authorization } = request.headers;
+const todoRouter = new TodoRouter();
+const userRouter = new UserRouter();
 
-	if (authorization === 'Bearer secret') {
-		next();
-	} else {
-		response.status(403).json({ message: 'Unauthorized' });
-	}
-};
-
-app.get('/', verifyToken, asyncWrapper<Todo>(getTodos));
-
-app.post('/todos', asyncWrapper<Todo>(createTodo));
-
-app.put('/todos/:id', asyncWrapper<Todo>(updateTodo));
-
-app.delete('/todos/:id', asyncWrapper(deleteTodo));
+app.use('/', todoRouter.router);
+app.use('/', userRouter.router);
 
 app.listen(PORT, () => {
 	console.log(`[server]: Server is running at http://localhost:${PORT}`);

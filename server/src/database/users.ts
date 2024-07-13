@@ -7,6 +7,15 @@ const getUsersFromDatabase = async (): Promise<User[]> => {
 	return rows;
 };
 
+const getUserByCredentialsFromDatabase = async (email: string): Promise<User> => {
+	const user = await database.query<User>(
+		'SELECT * FROM "user" WHERE email = $1',
+		[ email ],
+	);
+
+	return user.rows[0];
+};
+
 const createUserInDatabase = async (username: string, email: string, password: string): Promise<User> => {
 	const checkUser = await database.query<User>(
 		'SELECT * FROM "user" WHERE email = $1',
@@ -40,4 +49,10 @@ const deleteUserFromDatabase = async (id: string): Promise<User> => {
 	return deletedUser.rows[0];
 };
 
-export { getUsersFromDatabase, createUserInDatabase, updateUserInDatabase, deleteUserFromDatabase };
+export {
+	getUsersFromDatabase,
+	createUserInDatabase,
+	updateUserInDatabase,
+	deleteUserFromDatabase,
+	getUserByCredentialsFromDatabase,
+};
